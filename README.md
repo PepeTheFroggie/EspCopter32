@@ -1,20 +1,24 @@
 # EspCopter
 
-Project using the ESP8266 and MPU6050 to control a quadcopter. Done with arduino for esp8266 ide. RC uses the ack-less ESPNOW protocol. See "espnow_RC_TX" for transmitter.
+Project using the ESP32 and MPU6050 to control a quadcopter. Done with arduino for esp32 ide. RC uses the ack-less ESPNOW protocol. See "espnow_RC_TX" for transmitter.
 
-Serial Konze 0xF5 protocol:
-The output to esc's is wired to the serial output pin #2 of the esp. Name is D4, GPIO02, TXD1. Baudrate is 128kb.
+PWM output to esc's wireing:
 
-Normal PWM output: (#define PWMOUT)
-The output to esc's is wired to the pins 14, 12, 13, 15. Refresh rate is about 6ms, pulses from 1ms to 2ms.
+* mot1 to D32, pin 32
+* mot1 to D33, pin 33
+* mot1 to D25, pin 25
+* mot1 to D26, pin 26 
+
+Refresh rate is about 6ms, pulses from 1ms to 2ms.
 
 RC pulse input sequence is adaptable: 
 
-* define ROL 0
-* define PIT 1
-* define THR 2
+* define ROL 1
+* define PIT 2
+* define THR 0
 * define RUD 3
 * define AU1 4
+* define AU2 5
 
 The copter will only arm after 1 second zero throttle. The copter will shut down motors RC data fails for more than 100ms.
 
@@ -24,11 +28,12 @@ To calibrate the ACC enter 'A' in the serial console.
 
 6050 wiring: 
 
-* SCL to D1 
-* SDA to D2 
-* VCC to 3.3V 
+* SCL to D22, pin 39 
+* SDA to D21, pin 42 
+* VCC to Vin 
 * GND to GND.
  
+Old esp8266 files:
 ![wiring.png](Wiring.png "Wiring")
 
 [Testflight](https://youtu.be/OhVVPzNwx6M)   
