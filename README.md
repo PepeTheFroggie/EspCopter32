@@ -34,9 +34,10 @@ To calibrate the ACC enter 'A' in the serial console.
 * VCC to Vin 
 * GND to GND.
  
-Old esp8266 files:
+
 ![wiring.png](Wiring.png "Wiring")
 
+Old esp8266 version:
 [Testflight](https://youtu.be/OhVVPzNwx6M)   
 [Telemetry](https://youtu.be/0AWHVxgIqno)   
 
