@@ -1,8 +1,9 @@
 # EspCopter
 
-Project using the ESP32 and MPU6050 to control a quadcopter. Done with arduino for esp32 ide. RC uses the ack-less ESPNOW protocol. See "espnow_RC_TX" for transmitter.
+Project using the ESP32 and MPU6050 to control a quadcopter. Done with arduino for esp32 ide. 
+RC uses the ack-less ESPNOW protocol. See "espnow_RC_TX" for transmitter.
 
-PWM output to esc's wireing:
+PWM output to esc's wiring:
 
 * mot1 to D32, pin 32
 * mot1 to D33, pin 33
