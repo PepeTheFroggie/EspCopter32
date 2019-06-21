@@ -6,9 +6,9 @@ RC uses the ack-less ESPNOW protocol. See [espnow_RC_TX](https://github.com/Pepe
 PWM output to esc's wiring:
 
 * mot1 to D32, pin 32
-* mot1 to D33, pin 33
-* mot1 to D25, pin 25
-* mot1 to D26, pin 26 
+* mot2 to D33, pin 33
+* mot3 to D25, pin 25
+* mot4 to D26, pin 26 
 
 Refresh rate is about 6ms, pulses from 1ms to 2ms.
 
@@ -35,8 +35,11 @@ To calibrate the ACC enter 'A' in the serial console.
 
 ![wiring.png](Wiring.png "Wiring")
 
+I hate modules with pinheaders installed. Makes em heavy, bulky, ugly.
 ![DSC02360.jpg](DSC02360.jpg "I hate modules with pinheaders installed. Makes em heavy, bulky, ugly")
 
+Ugly, but it flies:
+![DSC02364.jpg](DSC02364.jpg "Mr.ugly")
 
 Old esp8266 version:
 

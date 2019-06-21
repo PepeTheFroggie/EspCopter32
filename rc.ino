@@ -27,18 +27,24 @@ void mix()
   }
   else 
   { 
-    zeroGyroI();
     axisPID[0] = 0; axisPID[1] = 0; axisPID[2] = 0;
     servo[0] = 1000; servo[1] = 1000; servo[2] = 1000; servo[3] = 1000;
   }
+  /*
+  Serial.print(servo[0]); Serial.print("  ");
+  Serial.print(servo[1]); Serial.print("  ");
+  Serial.print(servo[2]); Serial.print("  ");
+  Serial.print(servo[3]); Serial.println();
+  */
 }
+
 
 #if defined PWMOUT //----------------------------------------------
 
-const int MotPin0 = 32;  
-const int MotPin1 = 33;  
-const int MotPin2 = 25;  
-const int MotPin3 = 26;  
+const int MotPin0 = 32;  //HR
+const int MotPin1 = 33;  //VR
+const int MotPin2 = 25;  //HL
+const int MotPin3 = 26;  //VL
 const int MotChannel0 = 0;
 const int MotChannel1 = 1;   
 const int MotChannel2 = 2;

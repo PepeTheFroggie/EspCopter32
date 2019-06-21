@@ -2,10 +2,10 @@
 #define yawRate 90
 #define rollPitchRate 40
 
-static int8_t P_Level_PID = 30;  // P8
-static int8_t I_Level_PID = 15;  // I8
+static int8_t P_Level_PID = 30;  // P8 25
+static int8_t I_Level_PID = 20;  // I8 15
 static int8_t D_Level_PID = 10;  // D8
-static int8_t P_PID[3] = { 20, 20, 20 };     // P8
+static int8_t P_PID[3] = { 30, 30, 30 };     // P8
 static int8_t I_PID[3] = { 10, 10, 10 };     // I8
 static int8_t D_PID[3] = { 10, 10,  0 };     // D8
 
@@ -104,5 +104,3 @@ void zeroGyroI()
 {
   //errorGyroI[ROLL] = 0; errorGyroI[PITCH] = 0; errorGyroI[YAW] = 0;
 }
-
-

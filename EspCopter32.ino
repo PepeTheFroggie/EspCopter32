@@ -106,7 +106,6 @@ void loop()
     else                          flightmode = STABI;   
     if (oldflightmode != flightmode)
     {
-      zeroGyroI();
       oldflightmode = flightmode;
     }
 
@@ -123,7 +122,11 @@ void loop()
       else if (rcValue[AU2] >= 1600)
       {  
         if (rcValue[THR] < MINTHROTTLE) armct++;
-        if (armct >= 25) { digitalWrite(LED,HIGH); armed = true;}
+        if (armct >= 25) 
+        { 
+          digitalWrite(LED,HIGH); 
+          armed = true;
+        }
       } 
     #else
       if (armed) 
@@ -136,7 +139,11 @@ void loop()
       else
       {  
         if (rcValue[THR] < MINTHROTTLE) armct++;
-        if (armct >= 25) { digitalWrite(LED,HIGH); armed = true;}
+        if (armct >= 25) 
+        { 
+          digitalWrite(LED,HIGH); 
+          armed = true;
+        }
       }
     #endif 
     
