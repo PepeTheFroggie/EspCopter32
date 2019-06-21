@@ -41,5 +41,5 @@ I hate modules with pinheaders installed. Makes em heavy, bulky, ugly.
 Ugly, but it flies:
 ![DSC02364.jpg](DSC02364.jpg "Mr.ugly")
 
-[Testflight](hhttps://youtu.be/QWrKGh4auAo)  
+[Testflight](https://youtu.be/QWrKGh4auAo)  
 
