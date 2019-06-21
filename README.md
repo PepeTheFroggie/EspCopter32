@@ -1,7 +1,7 @@
 # EspCopter
 
 Project using the ESP32 and MPU6050 to control a quadcopter. Done with arduino for esp32 ide. 
-RC uses the ack-less ESPNOW protocol. See "espnow_RC_TX" for transmitter.
+RC uses the ack-less ESPNOW protocol. See [espnow_RC_TX](https://github.com/PepeTheFroggie/espnow_RC_TX) for transmitter.
 
 PWM output to esc's wiring:
 
@@ -22,9 +22,7 @@ RC pulse input sequence is adaptable:
 * define AU2 5
 
 The copter will only arm after 1 second zero throttle. The copter will shut down motors RC data fails for more than 100ms.
-
 The PID for level (acc) and gyro can be adjusted individually.  
-
 To calibrate the ACC enter 'A' in the serial console.
 
 6050 wiring: 
@@ -36,6 +34,9 @@ To calibrate the ACC enter 'A' in the serial console.
  
 
 ![wiring.png](Wiring.png "Wiring")
+
+![DSC02360.jpg]("I hate modules with pinheaders installed. Makes em heavy, bulky, ugly")
+
 
 Old esp8266 version:
 
