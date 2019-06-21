@@ -35,7 +35,7 @@ To calibrate the ACC enter 'A' in the serial console.
 
 ![wiring.png](Wiring.png "Wiring")
 
-![DSC02360.jpg]("I hate modules with pinheaders installed. Makes em heavy, bulky, ugly")
+![DSC02360.jpg](DSC02360.jpg "I hate modules with pinheaders installed. Makes em heavy, bulky, ugly")
 
 
 Old esp8266 version:
