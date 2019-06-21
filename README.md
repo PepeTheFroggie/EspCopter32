@@ -41,8 +41,5 @@ I hate modules with pinheaders installed. Makes em heavy, bulky, ugly.
 Ugly, but it flies:
 ![DSC02364.jpg](DSC02364.jpg "Mr.ugly")
 
-Old esp8266 version:
-
-[Testflight](https://youtu.be/OhVVPzNwx6M)   
-[Telemetry](https://youtu.be/0AWHVxgIqno)   
+[Testflight](hhttps://youtu.be/QWrKGh4auAo)  
 
