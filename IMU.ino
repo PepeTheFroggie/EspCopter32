@@ -79,3 +79,5 @@ void getEstimatedAttitude()
   angle[ROLL]  = 572.95f * atan2(EstG.V.X , EstG.V.Z);
   angle[PITCH] = 572.95f * atan2(EstG.V.Y , invmagXZ*sqGX_sqGZ);
 }
+
+

@@ -28,7 +28,6 @@ void i2cWriteByte(uint8_t Address, uint8_t Register, uint8_t Data)
 }
 
 #define ADDRESS 0x03
-#define CALSTEPS 64
 int calibratingG = CALSTEPS;
 int calibratingA = 0;
 int16_t gyroZero[3] = {0,0,0};
@@ -47,16 +46,16 @@ void GYRO_Common()
     for (axis = 0; axis < 3; axis++) 
     {
       // Reset g[axis] at start of calibration
-      if (calibratingG == CALSTEPS) 
-        g[axis]=0;
+      if (calibratingG == CALSTEPS) g[axis]=0;
       // Sum up 512 readings
-      g[axis] +=gyroADC[axis];
+      g[axis] += gyroADC[axis];
       // Clear global variables for next reading
       gyroADC[axis]=0;
       gyroZero[axis]=0;
       if (calibratingG == 1) 
       {
-        g[axis] += CALSTEPS/2;
+        if (g[axis]>=0) g[axis] += CALSTEPS/2;
+        else            g[axis] -= CALSTEPS/2;
         gyroZero[axis] = g[axis]/CALSTEPS;
       }
     }
@@ -82,7 +81,7 @@ void ACC_Common()
       // Reset a[axis] at start of calibration
       if (calibratingA == CALSTEPS) a[axis]=0;
       // Sum up 512 readings
-      a[axis] +=accADC[axis];
+      a[axis] += accADC[axis];
       // Clear global variables for next reading
       accADC[axis]=0;
       accZero[axis]=0;
@@ -90,18 +89,21 @@ void ACC_Common()
     // Calculate average, shift Z down by acc_1G and store values in EEPROM at end of calibration
     if (calibratingA == 1) 
     {
-      a[0]  += CALSTEPS/2;
-      a[1]  += CALSTEPS/2;
-      a[2]  += CALSTEPS/2;
+      if (a[0] >= 0) a[0] += CALSTEPS/2; else a[0] -= CALSTEPS/2;
+      if (a[1] >= 0) a[1] += CALSTEPS/2; else a[1] -= CALSTEPS/2;
+      if (a[2] >= 0) a[2] += CALSTEPS/2; else a[2] -= CALSTEPS/2;
       accZero[0] = a[0]/CALSTEPS;
       accZero[1] = a[1]/CALSTEPS;
-      accZero[2] = (a[2]/CALSTEPS)-ACCRESO;   
+      accZero[2] = a[2]/CALSTEPS - ACCRESO;   
+      Serial.print("  "); Serial.print(accZero[0]); Serial.println();
+      Serial.print("  "); Serial.print(accZero[1]); Serial.println();
+      Serial.print("  "); Serial.print(accZero[2]); Serial.println();
     }
     calibratingA--;
   }
-  accADC[0] -=  accZero[0] ;
+  accADC[0] -=  accZero[0];
   accADC[1] -=  accZero[1];
-  accADC[2] -=  accZero[2] ;
+  accADC[2] -=  accZero[2];
 }
 
 uint8_t rawADC[6];
@@ -113,25 +115,6 @@ void Gyro_getADC ()
                     ((rawADC[2]<<8) | rawADC[3]) ,
                     ((rawADC[4]<<8) | rawADC[5]) );
   GYRO_Common();
-}
-
-void ACC_Read()
-{
-  accZero[0] = EEPROM.read(0) | (EEPROM.read(1)<<8);
-  accZero[1] = EEPROM.read(2) | (EEPROM.read(3)<<8);
-  accZero[2] = EEPROM.read(4) | (EEPROM.read(5)<<8);
-}
-
-void ACC_Store()
-{
-    EEPROM.write(0, accZero[0] & 0xFF);
-    EEPROM.write(1, accZero[0] >> 8);
-    EEPROM.write(2, accZero[1] & 0xFF);
-    EEPROM.write(3, accZero[1] >> 8);
-    EEPROM.write(4, accZero[2] & 0xFF);
-    EEPROM.write(5, accZero[2] >> 8);
-    EEPROM.write(63, 0x55);
-    EEPROM.commit();
 }
 
 void ACC_getADC () 
@@ -169,8 +152,3 @@ void MPU6050_init()
   i2cWriteByte(MPU6050_ADDRESS, 0x1C, 0x10);             //ACCEL_CONFIG 
   delay(50);
 }
-
-
-
-
-

@@ -7,8 +7,19 @@
 
 #define WIFI_CHANNEL 4
 #define PWMOUT  // normal esc, uncomment for serial esc
-//#define ARMSWITCH
 #define LED 2
+//#define ALLOWWEBSERVER
+#define CALSTEPS 256 // gyro and acc calibration steps
+
+extern int16_t accZero[3];
+extern float yawRate;
+extern float rollPitchRate;
+extern float P_PID;
+extern float I_PID;
+extern float D_PID;
+extern float P_Level_PID;
+extern float I_Level_PID;
+extern float D_Level_PID;
 
 volatile boolean recv;
 //volatile int peernum = 0;
@@ -63,9 +74,16 @@ static int8_t oldflightmode;
 
 boolean armed = false;
 uint8_t armct = 0;
+#define RUN_ESPNOW 0
+#define RUN_WEBSERVER 1
+int runtype = RUN_ESPNOW;
 
 void setup() 
 {
+  #ifdef ALLOWWEBSERVER
+  stopwebserver();
+  #endif
+
   Serial.begin(115200); Serial.println();
 
   MPU6050_init();
@@ -73,7 +91,10 @@ void setup()
   
   EEPROM.begin(64);
   if (EEPROM.read(63) != 0x55) Serial.println("Need to do ACC calib");
-  ACC_Read();
+  else ACC_Read(); // eeprom is initialized
+  if (EEPROM.read(62) != 0xAA) Serial.println("Need to check and write PID");
+  else PID_Read(); // eeprom is initialized
+
   
   WiFi.mode(WIFI_STA); // Station mode for esp-now 
   Serial.printf("This mac: %s, ", WiFi.macAddress().c_str()); 
@@ -94,8 +115,28 @@ uint32_t rxt; // receive time, used for falisave
 void loop() 
 {
   uint32_t now,diff; 
-  
   now = millis(); // actual time
+
+  #ifdef ALLOWWEBSERVER
+  if (runtype == RUN_ESPNOW)
+  {
+    if (rcValue[AU2] > 1700) 
+    {
+      Serial.println("starting webserver");
+      esp_now_deinit();
+      armed = false;
+      armct = 0;
+      // switch to webserver
+      setupwebserver();
+      runtype = RUN_WEBSERVER;
+      Serial.println("reset to exit");
+    }
+  }
+  else
+  {
+    loopwebserver();
+  }
+  #endif
 
   if (recv)
   {
@@ -106,46 +147,26 @@ void loop()
     else                          flightmode = STABI;   
     if (oldflightmode != flightmode)
     {
+      zeroGyroAccI();
       oldflightmode = flightmode;
     }
 
-    #if defined (ARMSWITCH)
-      if (armed) 
-      {
-        if (rcValue[AU2] <= 1400) { digitalWrite(LED,LOW); armed = false; armct = 0; }
-        rcValue[THR]    -= THRCORR;
-        rcCommand[ROLL]  = rcValue[ROL] - MIDRUD;
-        rcCommand[PITCH] = rcValue[PIT] - MIDRUD;
-        rcCommand[YAW]   = rcValue[RUD] - MIDRUD;
-        
-      }  
-      else if (rcValue[AU2] >= 1600)
-      {  
-        if (rcValue[THR] < MINTHROTTLE) armct++;
-        if (armct >= 25) 
-        { 
-          digitalWrite(LED,HIGH); 
-          armed = true;
-        }
-      } 
-    #else
-      if (armed) 
-      {
-        rcValue[THR]    -= THRCORR;
-        rcCommand[ROLL]  = rcValue[ROL] - MIDRUD;
-        rcCommand[PITCH] = rcValue[PIT] - MIDRUD;
-        rcCommand[YAW]   = rcValue[RUD] - MIDRUD;
-      }  
-      else
-      {  
-        if (rcValue[THR] < MINTHROTTLE) armct++;
-        if (armct >= 25) 
-        { 
-          digitalWrite(LED,HIGH); 
-          armed = true;
-        }
+    if (armed) 
+    {
+      rcValue[THR]    -= THRCORR;
+      rcCommand[ROLL]  = rcValue[ROL] - MIDRUD;
+      rcCommand[PITCH] = rcValue[PIT] - MIDRUD;
+      rcCommand[YAW]   = rcValue[RUD] - MIDRUD;
+    }  
+    else
+    {  
+      if (rcValue[THR] < MINTHROTTLE) armct++;
+      if (armct >= 25) 
+      { 
+        digitalWrite(LED,HIGH); 
+        armed = true;
       }
-    #endif 
+    }
     
     //Serial.println(rcValue[AU2]    );
     //Serial.print(rcValue[THR]    ); Serial.print("  ");
@@ -195,7 +216,7 @@ void loop()
     if (ch == 'A')
     { 
       Serial.println("Doing ACC calib");
-      calibratingA = 64; // CALSTEPS
+      calibratingA = CALSTEPS;
       while (calibratingA != 0)
       {
         delay(CYCLETIME);
@@ -203,6 +224,30 @@ void loop()
       }
       ACC_Store();
       Serial.println("ACC calib Done");
+    }
+    else if (ch == 'R')
+    {
+      PID_Read();
+      Serial.println("Stored PID :");
+      Serial.println(P_PID);
+      Serial.println(I_PID);
+      Serial.println(D_PID);
+      Serial.println(P_Level_PID);
+      Serial.println(I_Level_PID);
+      Serial.println(D_Level_PID);
+    }
+    else if (ch == 'P')
+    {
+      Serial.println("Loading default PID");
+      yawRate = 5.0;
+      rollPitchRate = 5.0;
+      P_PID = 0.15;    // P8
+      I_PID = 0.00;    // I8
+      D_PID = 0.08; 
+      P_Level_PID = 0.75;   // P8
+      I_Level_PID = 0.01;   // I8
+      D_Level_PID = 0.10;
+      PID_Store();
     }
   }
   
