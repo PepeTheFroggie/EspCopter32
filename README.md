@@ -1,14 +1,14 @@
-# EspCopter
+# Esp32Copter
 
 Project using the ESP32 and MPU6050 to control a quadcopter. Done with arduino for esp32 ide. 
 RC uses the ack-less ESPNOW protocol. See [espnow_RC_TX](https://github.com/PepeTheFroggie/espnow_RC_TX) for transmitter.
 
 PWM output to esc's wiring:
 
-* mot1 to D32, pin 32
-* mot2 to D33, pin 33
-* mot3 to D25, pin 25
-* mot4 to D26, pin 26 
+* mot1 to D32, pin 32, BackRight
+* mot2 to D33, pin 33, FrontRight
+* mot3 to D25, pin 25, BackLeft
+* mot4 to D26, pin 26, FrontLeft 
 
 Refresh rate is about 6ms, pulses from 1ms to 2ms.
 
@@ -32,6 +32,13 @@ To calibrate the ACC enter 'A' in the serial console.
 * VCC to Vin 
 * GND to GND.
  
+Be sure you do acc_calib and write default patams to eeprom before taking off. 
+Acc_calib is done ba placing the copter on a level surface and press A on the serial console.
+Default PID are written by press P on the serial console. Read them with R.
+
+Deaultf PID are for a small copter, a bigger copter might need substantially lower values. Adjust gyro PID first and only if it flyes like silk adjust level_pid.
+Experimental:
+You can use a phone to change PID. But its RC control or webserver, not both. Define #ALLOWWEBSERVER and use channel 6 to init webserver. Change values and reset to go back to fly mode.
 
 ![wiring.png](Wiring.png "Wiring")
 
