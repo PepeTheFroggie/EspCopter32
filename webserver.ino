@@ -1,6 +1,6 @@
 #include <WebServer.h>
 
-#ifdef ALLOWWEBSERVER
+#ifdef webServer
 
 const char GYRO_PID[] PROGMEM = R"=====(
 <!DOCTYPE html>

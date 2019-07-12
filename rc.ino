@@ -1,4 +1,41 @@
 
+#if defined externRC
+//------------------------------------------------
+  #define PPMIN_CHANNELS 6  // dont raise this
+
+  volatile uint32_t last = 0;
+  volatile uint8_t  chan = 0;
+
+  ICACHE_RAM_ATTR void rxInt() 
+  {
+    uint32_t now,diff; 
+    if (!gpio_get_level(RC_IN_GPIO)) return; // because edge triggering on esp32 doesent work yet
+    
+    now = micros();
+    diff = now - last;
+    last = now;
+
+    if      (diff > 3000) { chan = 0; } // Sync gap
+    else if (chan < CHANNELS)
+    {
+      if (950<diff && diff<2050)
+      {
+        rcValue[chan] = diff;
+        chan++;
+      }
+      else chan = CHANNELS; // skip, corrupted signal.
+    }
+    if (chan == PPMIN_CHANNELS) recv = true;
+  }
+  
+  void init_RC()
+  {
+    pinMode(RC_IN_PIN,INPUT_PULLUP);
+    attachInterrupt(RC_IN_PIN,rxInt,CHANGE);
+  }
+  
+//------------------------------------------------
+#endif
 
 void buf_to_rc()
 {

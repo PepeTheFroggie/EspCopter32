@@ -32,13 +32,19 @@ To calibrate the ACC enter 'A' in the serial console.
 * VCC to Vin 
 * GND to GND.
  
-Be sure you do acc_calib and write default patams to eeprom before taking off. 
+Optional external RC input:
+
+* PPM SUM signal to pin 27
+* uncomment "#define externRC"
+
+Be sure you do acc_calib and write default params to eeprom before taking off. 
 Acc_calib is done ba placing the copter on a level surface and press A on the serial console.
 Default PID are written by press P on the serial console. Read them with R.
 
 Deaultf PID are for a small copter, a bigger copter might need substantially lower values. Adjust gyro PID first and only if it flyes like silk adjust level_pid.
 Experimental:
-You can use a phone to change PID. But its RC control or webserver, not both. Define #ALLOWWEBSERVER and use channel 6 to init webserver. Change values and reset to go back to fly mode.
+You can use a phone to change PID using external RC input. Define #ALLOWWEBSERVER. Connect to the IP given on serial console at startup. Use http, not https.
+
 
 ![wiring.png](Wiring.png "Wiring")
 

@@ -1,7 +1,8 @@
 // Spec of RC data
 
 #define CHANNELS 8
-#define IN_PIN 2 
+#define RC_IN_PIN 27 
+#define RC_IN_GPIO GPIO_NUM_27
 
 typedef struct 
 {
@@ -28,5 +29,3 @@ RCdataTY RCdata;
 
 int16_t rcValue[CHANNELS];  // in us, center = 1500
 uint8_t seqno;
-
-

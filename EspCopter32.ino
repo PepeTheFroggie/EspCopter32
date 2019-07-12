@@ -8,8 +8,9 @@
 #define WIFI_CHANNEL 4
 #define PWMOUT  // normal esc, uncomment for serial esc
 #define LED 2
-//#define ALLOWWEBSERVER
 #define CALSTEPS 256 // gyro and acc calibration steps
+#define externRC // use of external RC receiver in ppmsum mode
+#define webServer // use of webserver to change PID
 
 extern int16_t accZero[3];
 extern float yawRate;
@@ -48,7 +49,7 @@ void recv_cb(const uint8_t *macaddr, const uint8_t *data, int len)
 #define ACCRESO 4096
 #define CYCLETIME 4
 #define MINTHROTTLE 1090
-#define MIDRUD 1500
+#define MIDRUD 1517
 #define THRCORR 19
 
 enum ang { ROLL,PITCH,YAW };
@@ -59,10 +60,18 @@ static int16_t gyroData[3];
 static float angle[2]    = {0,0};  
 extern int calibratingA;
 
-#define ROL 1
-#define PIT 2
-#define THR 0
+//flysky
+#define ROL 0
+#define PIT 1
+#define THR 2
 #define RUD 3
+
+//orangerx
+//#define ROL 1
+//#define PIT 2
+//#define THR 0
+//#define RUD 3
+
 #define AU1 4
 #define AU2 5
 static int16_t rcCommand[] = {0,0,0};
@@ -74,16 +83,10 @@ static int8_t oldflightmode;
 
 boolean armed = false;
 uint8_t armct = 0;
-#define RUN_ESPNOW 0
-#define RUN_WEBSERVER 1
-int runtype = RUN_ESPNOW;
+int debugvalue = 0;
 
 void setup() 
 {
-  #ifdef ALLOWWEBSERVER
-  stopwebserver();
-  #endif
-
   Serial.begin(115200); Serial.println();
 
   MPU6050_init();
@@ -97,13 +100,21 @@ void setup()
 
   
   WiFi.mode(WIFI_STA); // Station mode for esp-now 
-  Serial.printf("This mac: %s, ", WiFi.macAddress().c_str()); 
-  Serial.printf(", channel: %i\n", WIFI_CHANNEL); 
-  WiFi.disconnect();
+  #if defined webServer
+    setupwebserver();
+    delay(500); 
+  #endif
 
-  if (esp_now_init() != 0) Serial.println("*** ESP_Now init failed");
-  esp_now_register_recv_cb(recv_cb);
-  
+
+  #if defined externRC
+    init_RC();
+  #else
+    Serial.printf("This mac: %s, ", WiFi.macAddress().c_str()); 
+    Serial.printf(", channel: %i\n", WIFI_CHANNEL); 
+    if (esp_now_init() != 0) Serial.println("*** ESP_Now init failed");
+    esp_now_register_recv_cb(recv_cb);
+  #endif
+
   delay(500); 
   pinMode(LED,OUTPUT);
   digitalWrite(LED,LOW);
@@ -117,32 +128,28 @@ void loop()
   uint32_t now,diff; 
   now = millis(); // actual time
 
-  #ifdef ALLOWWEBSERVER
-  if (runtype == RUN_ESPNOW)
-  {
-    if (rcValue[AU2] > 1700) 
-    {
-      Serial.println("starting webserver");
-      esp_now_deinit();
-      armed = false;
-      armct = 0;
-      // switch to webserver
-      setupwebserver();
-      runtype = RUN_WEBSERVER;
-      Serial.println("reset to exit");
-    }
-  }
-  else
-  {
+  #if defined webServer
     loopwebserver();
-  }
   #endif
 
   if (recv)
   {
-    recv = false;    
-    buf_to_rc();
+    recv = false;  
+    #if !defined externRC  
+      buf_to_rc();
+    #endif
 
+    if (debugvalue == 4)
+    {
+      Serial.printf("%4d ",rcValue[0]); 
+      Serial.printf("%4d ",rcValue[1]); 
+      Serial.printf("%4d ",rcValue[2]); 
+      Serial.printf("%4d ",rcValue[3]); 
+      Serial.printf("%4d ",rcValue[4]); 
+      Serial.printf("%4d ",rcValue[5]); 
+      Serial.println();
+    }
+  
     if      (rcValue[AU1] < 1300) flightmode = GYRO;
     else                          flightmode = STABI;   
     if (oldflightmode != flightmode)
@@ -181,18 +188,10 @@ void loop()
   }
 
   Gyro_getADC();
-  //Serial.print(gyroADC[0]); Serial.print("  ");
-  //Serial.print(gyroADC[1]); Serial.print("  ");
-  //Serial.print(gyroADC[2]); Serial.println("  ");
   
   ACC_getADC();
-  //Serial.print(accADC[0]); Serial.print("  ");
-  //Serial.print(accADC[1]); Serial.print("  ");
-  //Serial.print(accADC[2]); Serial.println("  ");
 
   getEstimatedAttitude();
-  //Serial.print(angle[0]); Serial.print("  ");
-  //Serial.print(angle[1]); Serial.println("  ");
 
   pid();
 
@@ -205,7 +204,7 @@ void loop()
   {
     rcValue[THR] = MINTHROTTLE;
     rxt = now;
-    Serial.println("FS");
+    //Serial.println("FS");
   }
 
   // parser part
@@ -213,7 +212,8 @@ void loop()
   {
     char ch = Serial.read();
     // Perform ACC calibration
-    if (ch == 'A')
+    if (ch == 10) Serial.println();
+    else if (ch == 'A')
     { 
       Serial.println("Doing ACC calib");
       calibratingA = CALSTEPS;
@@ -227,16 +227,15 @@ void loop()
     }
     else if (ch == 'R')
     {
-      PID_Read();
-      Serial.println("Stored PID :");
-      Serial.println(P_PID);
-      Serial.println(I_PID);
-      Serial.println(D_PID);
-      Serial.println(P_Level_PID);
-      Serial.println(I_Level_PID);
-      Serial.println(D_Level_PID);
+      Serial.println("Act PID :");
+      Serial.print(P_PID); Serial.print("  ");
+      Serial.print(I_PID); Serial.print("  ");
+      Serial.print(D_PID); Serial.println();
+      Serial.print(P_Level_PID); Serial.print("  ");
+      Serial.print(I_Level_PID); Serial.print("  ");
+      Serial.print(D_Level_PID); Serial.println();
     }
-    else if (ch == 'P')
+    else if (ch == 'D')
     {
       Serial.println("Loading default PID");
       yawRate = 5.0;
@@ -249,9 +248,80 @@ void loop()
       D_Level_PID = 0.10;
       PID_Store();
     }
+    else if (ch == 'W')
+    {
+      Serial.println(P_PID);
+      char ch = Serial.read();
+      int n = Serial.available();
+      if (n == 3)
+      {
+        n = readsernum();        
+        if      (ch == 'p') { P_PID       = float(n) * 0.01 + 0.004; Serial.print("pid P ");       Serial.print(P_PID); }
+        else if (ch == 'i') { I_PID       = float(n) * 0.01 + 0.004; Serial.print("pid I ");       Serial.print(I_PID); }
+        else if (ch == 'd') { D_PID       = float(n) * 0.01 + 0.004; Serial.print("pid D ");       Serial.print(D_PID); }
+        else if (ch == 'P') { P_Level_PID = float(n) * 0.01 + 0.004; Serial.print("pid Level P "); Serial.print(P_Level_PID); }
+        else if (ch == 'I') { I_Level_PID = float(n) * 0.01 + 0.004; Serial.print("pid Level I "); Serial.print(I_Level_PID); }
+        else if (ch == 'D') { D_Level_PID = float(n) * 0.01 + 0.004; Serial.print("pid Level D "); Serial.print(D_Level_PID); }
+        else Serial.println("unknown command");
+      }
+      else if (ch == 'S') { PID_Store(); Serial.print("stored in EEPROM"); }
+      else 
+      {
+        Serial.println("Input format wrong");
+        Serial.println("Wpxx, Wixx, Wdxx - write gyro PID, example: Wd13");
+        Serial.println("WPxx, WIxx, WDxx - write level PID, example: WD21");
+      }
+    }
+    else if (ch == '0') debugvalue = 0;
+    else if (ch == '1') debugvalue = 1;
+    else if (ch == '2') debugvalue = 2;
+    else if (ch == '3') debugvalue = 3;
+    else if (ch == '4') debugvalue = 4;
+    else
+    {
+      Serial.println("A - acc calib");
+      Serial.println("D - write default PID");
+      Serial.println("R - read actual PID");
+      Serial.println("Wpxx, Wixx, Wdxx - write gyro PID");
+      Serial.println("WPxx, WIxx, WDxx - write level PID");
+      Serial.println("WS - Store PID in EEPROM");
+      Serial.println("Display data:");
+      Serial.println("= - off");
+      Serial.println("1 - Gyro values");
+      Serial.println("2 - Acc values");
+      Serial.println("3 - Angle values");
+      Serial.println("4 - RC values");
+    }
+  }
+
+  if (debugvalue == 1)
+  {
+    Serial.print(gyroADC[0]); Serial.print("  ");
+    Serial.print(gyroADC[1]); Serial.print("  ");
+    Serial.print(gyroADC[2]); Serial.println();
+  }
+  else if (debugvalue == 2)
+  { 
+    Serial.print(accADC[0]); Serial.print("  ");
+    Serial.print(accADC[1]); Serial.print("  ");
+    Serial.print(accADC[2]); Serial.println();
+  }
+  else if (debugvalue == 3)
+  { 
+    Serial.print(angle[0]); Serial.print("  ");
+    Serial.print(angle[1]); Serial.println();
   }
   
   delay(CYCLETIME-1);
   //diff = millis() - now;
   //Serial.print(diff); Serial.println();
+}
+
+int readsernum()
+{
+  int num;
+  char numStr[3];  
+  numStr[0] = Serial.read();
+  numStr[1] = Serial.read();
+  return atol(numStr);
 }

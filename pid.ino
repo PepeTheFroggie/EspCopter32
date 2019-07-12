@@ -9,9 +9,9 @@ float D_PID = 0.08;    // D8
 //0.8 0.01 0.5 a little shaky, on the edge
 //0.8 0.01 0.9 a little shaky, good to fly
 
-float P_Level_PID = 0.55;   // P8
+float P_Level_PID = 0.40;   // P8
 float I_Level_PID = 0.02;   // I8
-float D_Level_PID = 0.07;   // D8
+float D_Level_PID = 0.05;   // D8
 
 static int16_t axisPID[3];
 static int16_t lastError[3] = {0,0,0};
