@@ -6,7 +6,7 @@
   volatile uint32_t last = 0;
   volatile uint8_t  chan = 0;
 
-  ICACHE_RAM_ATTR void rxInt() 
+  IRAM_ATTR void rxInt() 
   {
     uint32_t now,diff; 
     if (!gpio_get_level(RC_IN_GPIO)) return; // because edge triggering on esp32 doesent work yet
@@ -30,8 +30,12 @@
   
   void init_RC()
   {
-    pinMode(RC_IN_PIN,INPUT_PULLUP);
+    pinMode(RC_IN_PIN,INPUT);
     attachInterrupt(RC_IN_PIN,rxInt,CHANGE);
+  }
+  void end_RC()
+  {
+    detachInterrupt(RC_IN_PIN);
   }
   
 //------------------------------------------------

@@ -141,18 +141,34 @@ void action_pid()
 
 void action_level() 
 {
- int pl = server.arg("lev_p").toInt(); 
- int il = server.arg("lev_i").toInt(); 
- int dl = server.arg("lev_d").toInt(); 
+  int pl = server.arg("lev_p").toInt(); 
+  int il = server.arg("lev_i").toInt(); 
+  int dl = server.arg("lev_d").toInt(); 
 
- P_Level_PID = float(pl) * 0.01 + 0.004;
- I_Level_PID = float(il) * 0.01 + 0.004;
- D_Level_PID = float(dl) * 0.01 + 0.004;
+  P_Level_PID = float(pl) * 0.01 + 0.004;
+  I_Level_PID = float(il) * 0.01 + 0.004;
+  D_Level_PID = float(dl) * 0.01 + 0.004;
 
- PID_Store();
- Serial.println("Level pid stored");
- handleLevel();
+  PID_Store();
+  Serial.println("Level pid stored");
+  handleLevel();
 }
+
+/*
+void action_calib() 
+{
+  Serial.println("Doing ACC calib");
+  calibratingA = CALSTEPS;
+  while (calibratingA != 0)
+  {
+    delay(CYCLETIME);
+    ACC_getADC(); 
+  }
+  ACC_Store();
+  Serial.println("ACC calib Done");
+  handleCalib();
+}
+*/
 
 //==============================================================
 //                  SETUP
@@ -175,12 +191,13 @@ void setupwebserver(void)
   Serial.println("WiFi");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());  //IP address assigned to your ESP
- 
+
   server.on("/", handleRoot);               //Which routine to handle at root location
   server.on("/gyro_page", handleGyro);      //Which routine to handle at gyro location
   server.on("/level_page", handleLevel);    //Which routine to handle at level location
   server.on("/action_page", action_pid);    //form action is handled here
   server.on("/action_level", action_level); //form action is handled here
+  //server.on("/action_calib", action_calib); //form action is handled here
 
   server.begin();                  //Start server
   Serial.println("HTTP server started");

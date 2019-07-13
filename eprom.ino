@@ -44,6 +44,18 @@ float read_float(int pos)
   return loc.d;
 }
 
+void commit()
+{
+  #if defined externRC
+    end_RC();
+    EEPROM.commit();
+    delay(100);
+    init_RC();
+  #else
+    EEPROM.commit();
+   #endif
+}
+
 void ACC_Read()
 {
   accZero[0] = read_int16(0);
@@ -56,10 +68,8 @@ void ACC_Store()
   write_int16(2, accZero[1]);
   write_int16(4, accZero[2]);
   EEPROM.write(63, 0x55);
-  EEPROM.commit();
+  commit();
 }
-
-float testr,testw;
 
 void PID_Read()
 {
@@ -83,5 +93,5 @@ void PID_Store()
   write_float(34,I_Level_PID);
   write_float(38,D_Level_PID);
   EEPROM.write(62, 0xAA);
-  EEPROM.commit();
+  commit();
 }

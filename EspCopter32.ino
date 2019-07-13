@@ -9,8 +9,8 @@
 #define PWMOUT  // normal esc, uncomment for serial esc
 #define LED 2
 #define CALSTEPS 256 // gyro and acc calibration steps
-#define externRC // use of external RC receiver in ppmsum mode
-#define webServer // use of webserver to change PID
+//#define externRC // use of external RC receiver in ppmsum mode
+//#define webServer // use of webserver to change PID
 
 extern int16_t accZero[3];
 extern float yawRate;
@@ -286,7 +286,7 @@ void loop()
       Serial.println("WPxx, WIxx, WDxx - write level PID");
       Serial.println("WS - Store PID in EEPROM");
       Serial.println("Display data:");
-      Serial.println("= - off");
+      Serial.println("0 - off");
       Serial.println("1 - Gyro values");
       Serial.println("2 - Acc values");
       Serial.println("3 - Angle values");

@@ -37,8 +37,25 @@ Optional external RC input:
 * PPM SUM signal to pin 27
 * uncomment "#define externRC"
 
+Serial console commands:
+
+* A - acc calib
+* D - write default PID to eeprom
+* R - read actual PID
+* Wpxx, Wixx, Wdxx - write gyro PID
+* WPxx, WIxx, WDxx - write level PID
+* WS - Store PID in EEPROM
+
+Data display over serial console (use arduino plot function)
+
+* 0 - off
+* 1 - Gyro values
+* 2 - Acc values
+* 3 - Angle values
+* 4 - RC values
+
 Be sure you do acc_calib and write default params to eeprom before taking off. 
-Acc_calib is done ba placing the copter on a level surface and press A on the serial console.
+Acc_calib is done by placing the copter on a level surface and press A on the serial console.
 Default PID are written by press P on the serial console. Read them with R.
 
 Deaultf PID are for a small copter, a bigger copter might need substantially lower values. Adjust gyro PID first and only if it flyes like silk adjust level_pid.
@@ -54,5 +71,9 @@ I hate modules with pinheaders installed. Makes em heavy, bulky, ugly.
 Ugly, but it flies:
 ![DSC02364.jpg](DSC02364.jpg "Mr.ugly")
 
-[Testflight](https://youtu.be/QWrKGh4auAo)  
+ExternRC and webserver:
+![extRCwebserv.jpg](extRCwebserv.jpg "Extern RC")
+
+[Early Testflight](https://youtu.be/QWrKGh4auAo)  
+[ExtRC Testflight](https://youtu.be/sBia8O8xZoU)
 
