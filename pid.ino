@@ -82,7 +82,7 @@ void pid()
           else // STABI mode
           {
             // calculate error and limit the angle to 45 degrees max inclination
-            errorAngle = constrain(rcCommand[axis]/2,-225,+225) - angle[axis]; //16 bits is ok here           
+            errorAngle = constrain(rcCommand[axis],-400,+400) - angle[axis]; //16 bits is ok here           
             //it's the ANGLE mode - control is angle based, so control loop is needed
             //-----calculate P-term
             PTerm = errorAngle * P_Level_PID;

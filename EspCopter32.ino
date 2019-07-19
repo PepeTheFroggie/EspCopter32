@@ -45,11 +45,10 @@ void recv_cb(const uint8_t *macaddr, const uint8_t *data, int len)
   */
 };
 
-
 #define ACCRESO 4096
-#define CYCLETIME 4
+#define CYCLETIME 3
 #define MINTHROTTLE 1090
-#define MIDRUD 1517
+#define MIDRUD 1495
 #define THRCORR 19
 
 enum ang { ROLL,PITCH,YAW };
@@ -60,17 +59,17 @@ static int16_t gyroData[3];
 static float angle[2]    = {0,0};  
 extern int calibratingA;
 
-//flysky
-#define ROL 0
-#define PIT 1
-#define THR 2
-#define RUD 3
-
-//orangerx
-//#define ROL 1
-//#define PIT 2
-//#define THR 0
-//#define RUD 3
+#ifdef flysky
+  #define ROL 0
+  #define PIT 1
+  #define THR 2
+  #define RUD 3
+#else //orangerx
+  #define ROL 1
+  #define PIT 2
+  #define THR 0
+  #define RUD 3
+#endif
 
 #define AU1 4
 #define AU2 5
@@ -89,6 +88,7 @@ void setup()
 {
   Serial.begin(115200); Serial.println();
 
+  delay(3000); // give it some time to stop shaking after battery plugin
   MPU6050_init();
   MPU6050_readId(); // must be 0x68, 104dec
   
@@ -125,8 +125,9 @@ uint32_t rxt; // receive time, used for falisave
 
 void loop() 
 {
-  uint32_t now,diff; 
+  uint32_t now,mnow,diff; 
   now = millis(); // actual time
+  if (debugvalue == 5) mnow = micros();
 
   #if defined webServer
     loopwebserver();
@@ -139,16 +140,7 @@ void loop()
       buf_to_rc();
     #endif
 
-    if (debugvalue == 4)
-    {
-      Serial.printf("%4d ",rcValue[0]); 
-      Serial.printf("%4d ",rcValue[1]); 
-      Serial.printf("%4d ",rcValue[2]); 
-      Serial.printf("%4d ",rcValue[3]); 
-      Serial.printf("%4d ",rcValue[4]); 
-      Serial.printf("%4d ",rcValue[5]); 
-      Serial.println();
-    }
+    if (debugvalue == 4) Serial.printf("%4d %4d %4d %4d \n", rcValue[0], rcValue[1], rcValue[2], rcValue[3]); 
   
     if      (rcValue[AU1] < 1300) flightmode = GYRO;
     else                          flightmode = STABI;   
@@ -174,17 +166,9 @@ void loop()
         armed = true;
       }
     }
-    
-    //Serial.println(rcValue[AU2]    );
-    //Serial.print(rcValue[THR]    ); Serial.print("  ");
-    //Serial.print(rcCommand[ROLL] ); Serial.print("  ");
-    //Serial.print(rcCommand[PITCH]); Serial.print("  ");
-    //Serial.print(rcCommand[YAW]  ); Serial.println();
 
-    //diff = now - rxt;
-    //Serial.print(diff); Serial.println();
+    if (debugvalue == 5) Serial.printf("RC input ms: %d\n",now - rxt);
     rxt = millis();
-
   }
 
   Gyro_getADC();
@@ -203,8 +187,8 @@ void loop()
   if (now > rxt+90)
   {
     rcValue[THR] = MINTHROTTLE;
+    if (debugvalue == 5) Serial.printf("RC Failsafe after %d \n",now-rxt);
     rxt = now;
-    //Serial.println("FS");
   }
 
   // parser part
@@ -227,6 +211,9 @@ void loop()
     }
     else if (ch == 'R')
     {
+      Serial.print("Act Rate :  ");
+      Serial.print(yawRate); Serial.print("  ");
+      Serial.print(rollPitchRate); Serial.println();
       Serial.println("Act PID :");
       Serial.print(P_PID); Serial.print("  ");
       Serial.print(I_PID); Serial.print("  ");
@@ -238,19 +225,18 @@ void loop()
     else if (ch == 'D')
     {
       Serial.println("Loading default PID");
-      yawRate = 5.0;
+      yawRate = 6.0;
       rollPitchRate = 5.0;
       P_PID = 0.15;    // P8
       I_PID = 0.00;    // I8
       D_PID = 0.08; 
-      P_Level_PID = 0.75;   // P8
-      I_Level_PID = 0.01;   // I8
+      P_Level_PID = 0.35;   // P8
+      I_Level_PID = 0.00;   // I8
       D_Level_PID = 0.10;
       PID_Store();
     }
     else if (ch == 'W')
     {
-      Serial.println(P_PID);
       char ch = Serial.read();
       int n = Serial.available();
       if (n == 3)
@@ -272,11 +258,7 @@ void loop()
         Serial.println("WPxx, WIxx, WDxx - write level PID, example: WD21");
       }
     }
-    else if (ch == '0') debugvalue = 0;
-    else if (ch == '1') debugvalue = 1;
-    else if (ch == '2') debugvalue = 2;
-    else if (ch == '3') debugvalue = 3;
-    else if (ch == '4') debugvalue = 4;
+    else if (ch >= '0' && ch <='9') debugvalue = ch -'0';
     else
     {
       Serial.println("A - acc calib");
@@ -291,30 +273,21 @@ void loop()
       Serial.println("2 - Acc values");
       Serial.println("3 - Angle values");
       Serial.println("4 - RC values");
+      Serial.println("5 - Cycletime");
     }
   }
 
-  if (debugvalue == 1)
-  {
-    Serial.print(gyroADC[0]); Serial.print("  ");
-    Serial.print(gyroADC[1]); Serial.print("  ");
-    Serial.print(gyroADC[2]); Serial.println();
-  }
-  else if (debugvalue == 2)
-  { 
-    Serial.print(accADC[0]); Serial.print("  ");
-    Serial.print(accADC[1]); Serial.print("  ");
-    Serial.print(accADC[2]); Serial.println();
-  }
-  else if (debugvalue == 3)
-  { 
-    Serial.print(angle[0]); Serial.print("  ");
-    Serial.print(angle[1]); Serial.println();
-  }
+  if      (debugvalue == 1) Serial.printf("%4d %4d %4d \n", gyroADC[0], gyroADC[1], gyroADC[2]);  
+  else if (debugvalue == 2) Serial.printf("%5d %5d %5d \n", accADC[0], accADC[1], accADC[2]);
+  else if (debugvalue == 3) Serial.printf("%3f %3f \n", angle[0], angle[1]); 
   
-  delay(CYCLETIME-1);
-  //diff = millis() - now;
-  //Serial.print(diff); Serial.println();
+  delay(CYCLETIME-1);  
+
+  if (debugvalue == 5) 
+  {
+    diff = micros() - mnow;
+    Serial.println(diff); 
+  }
 }
 
 int readsernum()
