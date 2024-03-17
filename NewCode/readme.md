@@ -1,4 +1,5 @@
 Uses imu and pid from rehmflight.
+https://github.com/nickrehm/dRehmFlight/tree/master/Versions/dRehmFlight_Teensy_BETA_1.3
 
 Uses webpage PID setting.
 
