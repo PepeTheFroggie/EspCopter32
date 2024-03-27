@@ -14,4 +14,4 @@ Serial output options:
 ![serial.png](serial.png "serial")
 
 Webbased PID settings:
-![web.png](Web.png "Web")
+![web.png](web.png "Web")
