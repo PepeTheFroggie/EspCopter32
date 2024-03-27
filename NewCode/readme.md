@@ -13,5 +13,8 @@ For UDP transmitter see https://github.com/PepeTheFroggie/ESP32CAM_RCTANK/tree/m
 Serial output options:
 ![serial.png](serial.png "serial")
 
+Serial Gyro Plot:
+![gyroplot.png](gyroplot.png "gyro")
+
 Webbased PID settings:
 ![web.png](web.png "Web")
